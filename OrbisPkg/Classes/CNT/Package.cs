@@ -698,15 +698,15 @@ namespace OrbisPkg.CNT
             if (Passcode.Length != PKG_PASSCODE_SIZE)
                 return null;
 
-            byte[] IndexBytes = BitConverter.GetBytes(Index);
-            byte[] ContentIdBytes = Encoding.ASCII.GetBytes(BitConverter.ToString(ContentId).PadRight(0x30, '\0'));
+            byte[] IndexBytes = Sha256(BitConverter.GetBytes(Index));
+            byte[] ContentIdBytes = Sha256(Encoding.ASCII.GetBytes(BitConverter.ToString(ContentId).PadRight(0x30, '\0')));
 
             byte[] data = new byte[IndexBytes.Length + ContentIdBytes.Length + Passcode.Length];
             Buffer.BlockCopy(IndexBytes, 0, data, 0, IndexBytes.Length);
             Buffer.BlockCopy(ContentIdBytes, 0, data, IndexBytes.Length, ContentIdBytes.Length);
             Buffer.BlockCopy(Passcode, 0, data, IndexBytes.Length + ContentIdBytes.Length, Passcode.Length);
 
-            return Sha256(Sha256(data));
+            return Sha256(data);
         }
 
         private string EntryIdToString(EntryId id)
