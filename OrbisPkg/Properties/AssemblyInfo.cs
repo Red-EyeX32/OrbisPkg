@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("OrbisPkg")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("A small utility tool that will enable you to view/edit contents of a retail and/or fake package for the PlayStation 4 console.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("OpenOrbis")]
 [assembly: AssemblyProduct("OrbisPkg")]
-[assembly: AssemblyCopyright("Copyright ©  2018")]
+[assembly: AssemblyCopyright("Copyright © Red-EyeX32 2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

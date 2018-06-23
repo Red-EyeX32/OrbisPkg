@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace OrbisPkg.CNT
@@ -16,6 +17,11 @@ namespace OrbisPkg.CNT
         #region Variables
 
         private EndianIO IO;
+        private string _Passcode;
+
+        private static PackageFile pkg;
+
+        private const uint PKG_FLAG_FINALIZED = ((uint)1 << 31);
 
         private const uint PKG_FLAGS_VER_1     = 0x01000000;
         private const uint PKG_FLAGS_VER_2     = 0x02000000;
@@ -25,6 +31,30 @@ namespace OrbisPkg.CNT
         private const uint PKG_CONTENT_ID_SIZE = 0x30;
         private const uint PKG_HASH_SIZE       = 0x20;
         private const uint PKG_PASSCODE_SIZE   = 0x20;
+
+        private enum app_type
+        {
+            APP_TYPE_PAID_STANDALONE_FULL = 1,
+            APP_TYPE_UPGRADABLE = 2,
+            APP_TYPE_DEMO = 3,
+            APP_TYPE_FREEMIUM = 4,
+        }
+
+        private enum drm_type
+        {
+            DRM_TYPE_NONE = 0x0,
+            DRM_TYPE_PS4 = 0xF,
+        }
+
+        private enum content_type
+        {
+            CONTENT_TYPE_GD = 0x1A, /* pkg_ps4_app, pkg_ps4_patch, pkg_ps4_remaster */
+            CONTENT_TYPE_AC = 0x1B, /* pkg_ps4_ac_data, pkg_ps4_sf_theme, pkg_ps4_theme */
+            CONTENT_TYPE_AL = 0x1C, /* pkg_ps4_ac_nodata */
+            CONTENT_TYPE_DP = 0x1E, /* pkg_ps4_delta_patch */
+        }
+
+        #region Entry Ids
 
         private enum EntryId
         {
@@ -645,6 +675,8 @@ namespace OrbisPkg.CNT
 
         #endregion
 
+        #endregion
+
         #region Constructors
 
         /// <summary>
@@ -679,10 +711,34 @@ namespace OrbisPkg.CNT
 
         #endregion
 
+        #region Private Methods
+
+        private struct PackageFile
+        {
+            public PackageHeader header;
+
+            public bool is_finalized;
+        }
+
         private struct PackageHeader
         {
             public uint magic;
             public uint flags;
+            public uint unk_0x08;
+            public uint unk_0x0C;
+            public uint entry_count;
+            public ushort sc_entry_count;
+            public ushort entry_count_2;
+            public uint entry_table_offset;
+            public uint main_ent_data_size;
+            public ulong body_offset;
+            public ulong body_size;
+            public byte[] content_id;
+
+        }
+
+        private bool IsPasscodeValid(string data) {
+            return Regex.IsMatch(data, @"^[\w-]+");
         }
 
         private static byte[] Sha256(byte[] data)
@@ -711,8 +767,7 @@ namespace OrbisPkg.CNT
 
         private string EntryIdToString(EntryId id)
         {
-            switch (id)
-            {
+            switch (id) {
                 case EntryId.PKG_ENTRY_ID__DIGESTS: return ".digests";
                 case EntryId.PKG_ENTRY_ID__ENTRY_KEYS: return ".entry_keys";
                 case EntryId.PKG_ENTRY_ID__IMAGE_KEY: return ".image_key";
@@ -751,11 +806,48 @@ namespace OrbisPkg.CNT
             }
         }
 
+
         private void Read()
         {
-            IO.SeekTo(0);
+            pkg = new PackageFile();
 
-            // TODO
+            IO.SeekTo(0);
+            
+            pkg.header.magic = IO.In.ReadUInt32();
+            pkg.header.flags = IO.In.ReadUInt32();
+
+            if (pkg.header.magic != 0x7F434E54)
+                throw new Exception("Invalid magic detected for loaded PKG file!");
+
+            pkg.is_finalized = (pkg.header.flags & PKG_FLAG_FINALIZED) != 0;
+
+            pkg.header.unk_0x08 = IO.In.ReadUInt32();
+            pkg.header.unk_0x0C = IO.In.ReadUInt32();
+
+            pkg.header.entry_count = IO.In.ReadUInt32();
+            pkg.header.sc_entry_count = IO.In.ReadUInt16();
+            pkg.header.entry_count_2 = IO.In.ReadUInt16();
+            pkg.header.entry_table_offset = IO.In.ReadUInt32();
+            pkg.header.main_ent_data_size = IO.In.ReadUInt32();
         }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the Passcode.
+        /// </summary>
+        public string Passcode {
+            get { return _Passcode; }
+            set {
+                if (value.Length != PKG_PASSCODE_SIZE)
+                    throw new Exception("Passcode must be 32 bytes in length!");
+
+                _Passcode = value;
+            }
+        }
+
+        #endregion
     }
 }
