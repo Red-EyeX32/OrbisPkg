@@ -46,6 +46,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes\CNT\Package.cs" />
+    <Compile Include="Forms\frmPasscode.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\frmPasscode.Designer.cs">
+      <DependentUpon>frmPasscode.cs</DependentUpon>
+    </Compile>
     <Compile Include="IO\EndianIO.cs" />
     <Compile Include="Main.cs">
       <SubType>Form</SubType>
@@ -55,6 +61,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Forms\frmPasscode.resx">
+      <DependentUpon>frmPasscode.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Main.resx">
       <DependentUpon>Main.cs</DependentUpon>
     </EmbeddedResource>
@@ -93,5 +102,15 @@
   <ItemGroup>
     <None Include="Resources\CloseSolution_16xMD.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\FolderOpen_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Folder_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CD_16x.png" />
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -19,7 +19,7 @@ namespace OrbisPkg.CNT
         private EndianIO IO;
         private string _Passcode;
 
-        private static PackageFile pkg;
+        private static pkg_file_t pkg;
 
         private const uint PKG_FLAG_FINALIZED = ((uint)1 << 31);
 
@@ -32,22 +32,23 @@ namespace OrbisPkg.CNT
         private const uint PKG_HASH_SIZE       = 0x20;
         private const uint PKG_PASSCODE_SIZE   = 0x20;
 
-        private enum app_type
-        {
+        private const uint PKG_CONTENT_FLAGS_FIRST_PATCH = 0x00100000;
+        private const uint PKG_CONTENT_FLAGS_PATCHGO     = 0x00200000;
+
+
+        private enum app_type {
             APP_TYPE_PAID_STANDALONE_FULL = 1,
             APP_TYPE_UPGRADABLE = 2,
             APP_TYPE_DEMO = 3,
             APP_TYPE_FREEMIUM = 4,
         }
 
-        private enum drm_type
-        {
+        private enum drm_type {
             DRM_TYPE_NONE = 0x0,
             DRM_TYPE_PS4 = 0xF,
         }
 
-        private enum content_type
-        {
+        private enum content_type {
             CONTENT_TYPE_GD = 0x1A, /* pkg_ps4_app, pkg_ps4_patch, pkg_ps4_remaster */
             CONTENT_TYPE_AC = 0x1B, /* pkg_ps4_ac_data, pkg_ps4_sf_theme, pkg_ps4_theme */
             CONTENT_TYPE_AL = 0x1C, /* pkg_ps4_ac_nodata */
@@ -686,7 +687,7 @@ namespace OrbisPkg.CNT
         public Package(string FileName)
         {
             IO = new EndianIO(FileName, EndianType.BigEndian, true);
-            Read();
+            //Read();
         }
 
         /// <summary>
@@ -696,7 +697,7 @@ namespace OrbisPkg.CNT
         public Package(byte[] Data)
         {
             IO = new EndianIO(Data, EndianType.BigEndian, true);
-            Read();
+            //Read();
         }
 
         /// <summary>
@@ -706,22 +707,20 @@ namespace OrbisPkg.CNT
         public Package(Stream Stream)
         {
             IO = new EndianIO(Stream, EndianType.BigEndian, true);
-            Read();
+            //Read();
         }
 
         #endregion
 
         #region Private Methods
 
-        private struct PackageFile
-        {
-            public PackageHeader header;
+        private struct pkg_file_t {
+            public pkg_header_t header;
 
             public bool is_finalized;
         }
 
-        private struct PackageHeader
-        {
+        private struct pkg_header_t {
             public uint magic;
             public uint flags;
             public uint unk_0x08;
@@ -733,16 +732,17 @@ namespace OrbisPkg.CNT
             public uint main_ent_data_size;
             public ulong body_offset;
             public ulong body_size;
+            public byte[] pad;
             public byte[] content_id;
-
+            public drm_type drm_type;
+            public content_type content_type;
         }
 
         private bool IsPasscodeValid(string data) {
-            return Regex.IsMatch(data, @"^[\w-]+");
+            return Regex.IsMatch(data, @"^[A-Za-z0-9-_]+");
         }
 
-        private static byte[] Sha256(byte[] data)
-        {
+        private static byte[] Sha256(byte[] data) {
             return SHA256.Create().ComputeHash(data);
         }
 
@@ -807,9 +807,9 @@ namespace OrbisPkg.CNT
         }
 
 
-        private void Read()
+        public void Read()
         {
-            pkg = new PackageFile();
+            pkg = new pkg_file_t();
 
             IO.SeekTo(0);
             
@@ -829,6 +829,15 @@ namespace OrbisPkg.CNT
             pkg.header.entry_count_2 = IO.In.ReadUInt16();
             pkg.header.entry_table_offset = IO.In.ReadUInt32();
             pkg.header.main_ent_data_size = IO.In.ReadUInt32();
+
+            pkg.header.body_offset = IO.In.ReadUInt64();
+            pkg.header.body_size = IO.In.ReadUInt64();
+
+            pkg.header.pad = IO.In.ReadBytes(0x10);
+            pkg.header.content_id = IO.In.ReadBytes(PKG_CONTENT_ID_SIZE);
+
+            pkg.header.drm_type = (drm_type)IO.In.ReadUInt32();
+            pkg.header.content_type = (content_type)IO.In.ReadUInt32();
         }
 
         #endregion
@@ -841,8 +850,8 @@ namespace OrbisPkg.CNT
         public string Passcode {
             get { return _Passcode; }
             set {
-                if (value.Length != PKG_PASSCODE_SIZE)
-                    throw new Exception("Passcode must be 32 bytes in length!");
+                if (value.Length != PKG_PASSCODE_SIZE || !IsPasscodeValid(value))
+                    throw new Exception("Invalid passcode specified!");
 
                 _Passcode = value;
             }

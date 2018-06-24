@@ -63,6 +63,16 @@ namespace OrbisPkg.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap CD_16x {
+            get {
+                object obj = ResourceManager.GetObject("CD_16x", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap CloseSolution_16xMD {
             get {
                 object obj = ResourceManager.GetObject("CloseSolution_16xMD", resourceCulture);
@@ -73,9 +83,19 @@ namespace OrbisPkg.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap CloseSolution_16xMD1 {
+        internal static System.Drawing.Bitmap Folder_16x {
             get {
-                object obj = ResourceManager.GetObject("CloseSolution_16xMD1", resourceCulture);
+                object obj = ResourceManager.GetObject("Folder_16x", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap FolderOpen_16x {
+            get {
+                object obj = ResourceManager.GetObject("FolderOpen_16x", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

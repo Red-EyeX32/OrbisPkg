@@ -7,3 +7,4 @@ C:\Users\Alexander\Documents\GitHub\OrbisPkg\OrbisPkg\obj\Debug\OrbisPkg.csproj.
 C:\Users\Alexander\Documents\GitHub\OrbisPkg\OrbisPkg\obj\Debug\OrbisPkg.exe
 C:\Users\Alexander\Documents\GitHub\OrbisPkg\OrbisPkg\obj\Debug\OrbisPkg.pdb
 C:\Users\Alexander\Documents\GitHub\OrbisPkg\OrbisPkg\obj\Debug\OrbisPkg.csprojResolveAssemblyReference.cache
+C:\Users\Alexander\Documents\GitHub\OrbisPkg\OrbisPkg\obj\Debug\OrbisPkg.Forms.frmPasscode.resources
