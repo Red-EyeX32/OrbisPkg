@@ -1,10 +1,10 @@
 C:\Users\Alexander\Documents\GitHub\OrbisPkg\OrbisPkg\bin\Debug\OrbisPkg.exe.config
 C:\Users\Alexander\Documents\GitHub\OrbisPkg\OrbisPkg\bin\Debug\OrbisPkg.exe
 C:\Users\Alexander\Documents\GitHub\OrbisPkg\OrbisPkg\bin\Debug\OrbisPkg.pdb
+C:\Users\Alexander\Documents\GitHub\OrbisPkg\OrbisPkg\obj\Debug\OrbisPkg.csprojResolveAssemblyReference.cache
+C:\Users\Alexander\Documents\GitHub\OrbisPkg\OrbisPkg\obj\Debug\OrbisPkg.Forms.frmPasscode.resources
 C:\Users\Alexander\Documents\GitHub\OrbisPkg\OrbisPkg\obj\Debug\OrbisPkg.Main.resources
 C:\Users\Alexander\Documents\GitHub\OrbisPkg\OrbisPkg\obj\Debug\OrbisPkg.Properties.Resources.resources
 C:\Users\Alexander\Documents\GitHub\OrbisPkg\OrbisPkg\obj\Debug\OrbisPkg.csproj.GenerateResource.Cache
 C:\Users\Alexander\Documents\GitHub\OrbisPkg\OrbisPkg\obj\Debug\OrbisPkg.exe
 C:\Users\Alexander\Documents\GitHub\OrbisPkg\OrbisPkg\obj\Debug\OrbisPkg.pdb
-C:\Users\Alexander\Documents\GitHub\OrbisPkg\OrbisPkg\obj\Debug\OrbisPkg.csprojResolveAssemblyReference.cache
-C:\Users\Alexander\Documents\GitHub\OrbisPkg\OrbisPkg\obj\Debug\OrbisPkg.Forms.frmPasscode.resources

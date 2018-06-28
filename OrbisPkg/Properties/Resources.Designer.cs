@@ -83,6 +83,16 @@ namespace OrbisPkg.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap DetailsIconsView_16x {
+            get {
+                object obj = ResourceManager.GetObject("DetailsIconsView_16x", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Folder_16x {
             get {
                 object obj = ResourceManager.GetObject("Folder_16x", resourceCulture);
@@ -96,6 +106,26 @@ namespace OrbisPkg.Properties {
         internal static System.Drawing.Bitmap FolderOpen_16x {
             get {
                 object obj = ResourceManager.GetObject("FolderOpen_16x", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap LargeIconsView_16x {
+            get {
+                object obj = ResourceManager.GetObject("LargeIconsView_16x", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap ListIconsView_16x {
+            get {
+                object obj = ResourceManager.GetObject("ListIconsView_16x", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -126,6 +156,16 @@ namespace OrbisPkg.Properties {
         internal static System.Drawing.Bitmap SaveStatusBar1_16x {
             get {
                 object obj = ResourceManager.GetObject("SaveStatusBar1_16x", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap SmallIconsView_16x {
+            get {
+                object obj = ResourceManager.GetObject("SmallIconsView_16x", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

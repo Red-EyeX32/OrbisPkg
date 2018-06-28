@@ -26,7 +26,7 @@ namespace OrbisPkg.Forms
 
         private void btnOK_Click(object sender, EventArgs e)
         {
-            Main.PKG.Passcode = txtPasscode.Text.ToString();
+            Main.Content.Passcode = txtPasscode.Text.ToString();
             this.Close();
         }
     }
