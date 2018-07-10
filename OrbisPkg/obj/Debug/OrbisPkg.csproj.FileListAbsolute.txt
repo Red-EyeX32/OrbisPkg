@@ -8,3 +8,4 @@ C:\Users\Alexander\Documents\GitHub\OrbisPkg\OrbisPkg\obj\Debug\OrbisPkg.Propert
 C:\Users\Alexander\Documents\GitHub\OrbisPkg\OrbisPkg\obj\Debug\OrbisPkg.csproj.GenerateResource.Cache
 C:\Users\Alexander\Documents\GitHub\OrbisPkg\OrbisPkg\obj\Debug\OrbisPkg.exe
 C:\Users\Alexander\Documents\GitHub\OrbisPkg\OrbisPkg\obj\Debug\OrbisPkg.pdb
+C:\Users\Alexander\Documents\GitHub\OrbisPkg\OrbisPkg\obj\Debug\OrbisPkg.Forms.frmProperties.resources

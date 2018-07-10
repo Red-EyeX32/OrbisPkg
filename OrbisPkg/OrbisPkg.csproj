@@ -46,11 +46,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes\CNT\Package.cs" />
+    <Compile Include="Classes\CNT\PlaystationFileSystem.cs" />
     <Compile Include="Forms\frmPasscode.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\frmPasscode.Designer.cs">
       <DependentUpon>frmPasscode.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\frmProperties.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\frmProperties.Designer.cs">
+      <DependentUpon>frmProperties.cs</DependentUpon>
     </Compile>
     <Compile Include="IO\EndianIO.cs" />
     <Compile Include="Main.cs">
@@ -63,6 +70,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Forms\frmPasscode.resx">
       <DependentUpon>frmPasscode.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\frmProperties.resx">
+      <DependentUpon>frmProperties.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Main.resx">
       <DependentUpon>Main.cs</DependentUpon>
@@ -122,6 +132,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\DetailsIconsView_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Property_16x.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

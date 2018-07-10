@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmPasscode));
             this.txtPasscode = new System.Windows.Forms.TextBox();
             this.lblPasscode = new System.Windows.Forms.Label();
             this.btnOK = new System.Windows.Forms.Button();
@@ -83,9 +84,11 @@
             this.Controls.Add(this.txtPasscode);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.HelpButton = true;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "frmPasscode";
+            this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Passcode";
             this.ResumeLayout(false);

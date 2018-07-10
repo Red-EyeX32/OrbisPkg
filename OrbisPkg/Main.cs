@@ -42,11 +42,11 @@ namespace OrbisPkg
             }
 
             Content.Read();
+            
+            string[] SplitContentId = Content.Pkg.Header.ContentId.Split('-');
+            string Root = SplitContentId[1].Substring(0, SplitContentId[1].Length - 3);
 
-            string rootName = Content.Pkg.Header.ContentId.Substring(Content.Pkg.Header.ContentId.IndexOf("-") + 1,
-                Content.Pkg.Header.ContentId.IndexOf("_") - Content.Pkg.Header.ContentId.IndexOf("-") - 1);
-
-            RetrieveFolders(rootName);
+            RetrieveFolders(Root);
         }
 
         public void RetrieveFolders(string root)
@@ -66,6 +66,13 @@ namespace OrbisPkg
             } else {
 
             }
+        }
+
+        public frmProperties dlgProperties;
+        private void propertiesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (dlgProperties = new frmProperties())
+                dlgProperties.ShowDialog();
         }
     }
 }

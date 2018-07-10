@@ -44,6 +44,8 @@ namespace OrbisPkg.CNT
         private const uint PKG_CONTENT_FLAGS_DELTA_PATCH      = 0x41000000;
         private const uint PKG_CONTENT_FLAGS_CUMULATIVE_PATCH = 0x60000000;
 
+        private const ulong PKG_PFS_FLAG_NESTED_IMAGE = 0x8000000000000000;
+
         private enum AppType {
             APP_TYPE_PAID_STANDALONE_FULL = 1,
             APP_TYPE_UPGRADABLE = 2,
@@ -892,6 +894,9 @@ namespace OrbisPkg.CNT
                 case EntryId.PKG_ENTRY_ID__SHAREPRIVACYGUARDIMAGE_PNG: return "shareprivacyguardimage.png";
                 case EntryId.PKG_ENTRY_ID__ICON0_PNG: return "icon0.png";
 
+                case EntryId iconpng when (iconpng >= EntryId.PKG_ENTRY_ID__ICON0_00_PNG && iconpng <= EntryId.PKG_ENTRY_ID__ICON0_30_PNG):
+                    return string.Format("icon0_{0}.png", iconpng - EntryId.PKG_ENTRY_ID__ICON0_00_PNG);
+
                 default:
                     throw new Exception("CNT: Invalid 'Entry Id' value.");
             }
@@ -964,7 +969,7 @@ namespace OrbisPkg.CNT
 
         public void Read()
         {
-            IO.SeekTo(0);
+            IO.In.BaseStream.Position = 0;
             
             Pkg.Header.Magic = IO.In.ReadUInt32();
             Pkg.Header.Flags = IO.In.ReadUInt32();
@@ -1008,6 +1013,15 @@ namespace OrbisPkg.CNT
             Pkg.Header.ScEntries2Hash = IO.In.ReadBytes(PKG_HASH_SIZE);
             Pkg.Header.DigestTableHash = IO.In.ReadBytes(PKG_HASH_SIZE);
             Pkg.Header.BodyDigest = IO.In.ReadBytes(PKG_HASH_SIZE);
+
+            SeekToContainer(IO);
+        }
+
+        private void SeekToContainer(EndianIO io) {
+            io.SeekTo(0x400);
+
+            Pkg.Container.unk_0x400 = io.In.ReadUInt32();
+            Pkg.Container.PfsImageCount = io.In.ReadUInt32();
         }
 
         #endregion
