@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -23,28 +24,31 @@ namespace OrbisPkg.CNT
 
         private const uint PKG_FLAG_FINALIZED = ((uint)1 << 31);
 
-        private const uint PKG_FLAGS_VER_1     = 0x01000000;
-        private const uint PKG_FLAGS_VER_2     = 0x02000000;
-        private const uint PKG_FLAGS_INTERNAL  = 0x40000000;
+        private const uint PKG_FLAGS_VER_1 = 0x01000000;
+        private const uint PKG_FLAGS_VER_2 = 0x02000000;
+        private const uint PKG_FLAGS_INTERNAL = 0x40000000;
         private const uint PKG_FLAGS_FINALIZED = 0x80000000;
 
-        private const uint PKG_CONTENT_ID_SIZE       = 0x24;
+        private const uint PKG_CONTENT_ID_SIZE = 0x24;
         private const uint PKG_CONTENT_ID_BLOCK_SIZE = 0x30;
-        private const uint PKG_HASH_SIZE             = 0x20;
-        private const uint PKG_PASSCODE_SIZE         = 0x20;
+        private const uint PKG_HASH_SIZE = 0x20;
+        private const uint PKG_PASSCODE_SIZE = 0x20;
 
-        private const uint PKG_CONTENT_FLAGS_FIRST_PATCH      = 0x00100000;
-        private const uint PKG_CONTENT_FLAGS_PATCHGO          = 0x00200000;
-        private const uint PKG_CONTENT_FLAGS_REMASTER         = 0x00400000;
-        private const uint PKG_CONTENT_FLAGS_PS_CLOUD         = 0x00800000;
-        private const uint PKG_CONTENT_FLAGS_GD_AC            = 0x02000000;
-        private const uint PKG_CONTENT_FLAGS_NON_GAME         = 0x04000000;
-        private const uint PKG_CONTENT_FLAGS_0x8000000        = 0x08000000; // has data?
+        private const uint PKG_CONTENT_FLAGS_FIRST_PATCH = 0x00100000;
+        private const uint PKG_CONTENT_FLAGS_PATCHGO = 0x00200000;
+        private const uint PKG_CONTENT_FLAGS_REMASTER = 0x00400000;
+        private const uint PKG_CONTENT_FLAGS_PS_CLOUD = 0x00800000;
+        private const uint PKG_CONTENT_FLAGS_GD_AC = 0x02000000;
+        private const uint PKG_CONTENT_FLAGS_NON_GAME = 0x04000000;
+        private const uint PKG_CONTENT_FLAGS_0x8000000 = 0x08000000; // has data?
         private const uint PKG_CONTENT_FLAGS_SUBSEQUENT_PATCH = 0x40000000;
-        private const uint PKG_CONTENT_FLAGS_DELTA_PATCH      = 0x41000000;
+        private const uint PKG_CONTENT_FLAGS_DELTA_PATCH = 0x41000000;
         private const uint PKG_CONTENT_FLAGS_CUMULATIVE_PATCH = 0x60000000;
 
         private const ulong PKG_PFS_FLAG_NESTED_IMAGE = 0x8000000000000000;
+
+        private const uint PKG_ENTRY_KEYSET_SIZE = 0x20;
+        private const uint PKG_ENTRY_KEYSET_ENC_SIZE = 0x100;
 
         private enum AppType {
             APP_TYPE_PAID_STANDALONE_FULL = 1,
@@ -65,9 +69,14 @@ namespace OrbisPkg.CNT
             CONTENT_TYPE_DP = 0x1E, /* pkg_ps4_delta_patch */
         }
 
+        public enum IroTag {
+            IRO_TAG_SF_THEME = 0x1, /* SHAREfactory theme */
+            IRO_TAG_SS_THEME = 0x2, /* System Software theme */
+        }
+
         #region Entry Ids
 
-        private enum EntryId
+        public enum EntryId
         {
             PKG_ENTRY_ID__DIGESTS = 0x00000001,
             PKG_ENTRY_ID__ENTRY_KEYS = 0x00000010,
@@ -797,6 +806,15 @@ namespace OrbisPkg.CNT
 
         #endregion
 
+        #region Keystone Keys
+
+        private static byte[] keystone_passcode_secret = new byte[32] {
+            0xC7, 0x44, 0x05, 0xF6, 0x74, 0x24, 0xBA, 0x34, 0x2B, 0xC1, 0x27, 0x62, 0x51, 0xBB, 0xC2, 0xF5,
+            0x55, 0xF1, 0x60, 0x25, 0xB6, 0xA1, 0xB6, 0x71, 0x47, 0x80, 0xDB, 0xAE, 0xC8, 0x52, 0xFA, 0x2F
+        };
+
+        #endregion
+
         #endregion
 
         #region Constructors
@@ -832,6 +850,11 @@ namespace OrbisPkg.CNT
 
         #region Private Methods
 
+        private static uint ReverseBytes(uint val) {
+            return (val & 0x000000FFU) << 24 | (val & 0x0000FF00U) << 8 |
+                   (val & 0x00FF0000U) >> 8 | (val & 0xFF000000U) >> 24;
+        }
+
         private static byte[] Sha256(byte[] data) {
             return SHA256.Create().ComputeHash(data);
         }
@@ -840,15 +863,15 @@ namespace OrbisPkg.CNT
             return Regex.IsMatch(data, @"^[A-Za-z0-9-_]+$");
         }
 
-        private byte[] ComputeKeys(byte[] ContentId, byte[] Passcode, ulong Index) {
+        private byte[] ComputeKeys(byte[] ContentId, byte[] Passcode, uint Index) {
             if (ContentId.Length != PKG_CONTENT_ID_SIZE)
                 return null;
 
             if (Passcode.Length != PKG_PASSCODE_SIZE)
                 return null;
 
-            byte[] IndexBytes = Sha256(BitConverter.GetBytes(Index));
-            byte[] ContentIdBytes = Sha256(Encoding.ASCII.GetBytes(BitConverter.ToString(ContentId).PadRight((int)PKG_CONTENT_ID_BLOCK_SIZE, '\0')));
+            byte[] IndexBytes = Sha256(BitConverter.GetBytes(ReverseBytes(Index)));
+            byte[] ContentIdBytes = Sha256(Encoding.ASCII.GetBytes(Encoding.ASCII.GetString(ContentId).PadRight((int)PKG_CONTENT_ID_BLOCK_SIZE, '\0')));
 
             byte[] data = new byte[IndexBytes.Length + ContentIdBytes.Length + Passcode.Length];
             Buffer.BlockCopy(IndexBytes, 0, data, 0, IndexBytes.Length);
@@ -856,6 +879,10 @@ namespace OrbisPkg.CNT
             Buffer.BlockCopy(Passcode, 0, data, IndexBytes.Length + ContentIdBytes.Length, Passcode.Length);
 
             return Sha256(data);
+        }
+
+        private byte[] ComputeImageKey(byte[] ContentId, byte[] Passcode) {
+            return ComputeKeys(ContentId, Passcode, 1);
         }
 
         private string EntryIdToString(EntryId id)
@@ -902,6 +929,59 @@ namespace OrbisPkg.CNT
             }
         }
 
+        private ContainerHeader SeekToContainer(EndianIO io)
+        {
+            io.SeekTo(0x400);
+
+            Pkg.Container.unk_0x400 = io.In.ReadUInt32();
+            Pkg.Container.PfsImageCount = io.In.ReadUInt32();
+            Pkg.Container.PfsFlags = io.In.ReadUInt64();
+            Pkg.Container.PfsImageOffset = io.In.ReadUInt64();
+            Pkg.Container.PfsImageSize = io.In.ReadUInt64();
+            Pkg.Container.MountImageOffset = io.In.ReadUInt64();
+            Pkg.Container.MountImageSize = io.In.ReadUInt64();
+            Pkg.Container.PackageSize = io.In.ReadUInt64();
+            Pkg.Container.PfsSignedSize = io.In.ReadUInt32();
+            Pkg.Container.PfsCacheSize = io.In.ReadUInt32();
+            Pkg.Container.PfsImageDigest = io.In.ReadBytes(PKG_HASH_SIZE);
+            Pkg.Container.PfsSignedDigest = io.In.ReadBytes(PKG_HASH_SIZE);
+            Pkg.Container.PfsSplitSizeNth0 = io.In.ReadUInt64();
+            Pkg.Container.PfsSplitSizeNth1 = io.In.ReadUInt64();
+
+            return Pkg.Container;
+        }
+
+        private byte[] RsaDecrypt(byte[] data, RSAParameters parameters)
+        {
+            using (var rsa = new RSACryptoServiceProvider(2048)) {
+                // Import the Rsa key information.
+                // This needs to include private key information.
+                rsa.ImportParameters(parameters);
+                return rsa.Decrypt(data, false);
+            }
+        }
+
+        private void DecryptEntries(EndianIO io)
+        {
+            io.SeekTo(0x2400);
+            byte[] data = RsaDecrypt(io.In.ReadBytes(PKG_ENTRY_KEYSET_ENC_SIZE), param);
+
+            io.SeekTo(Pkg.Header.EntryTableOffset);
+            Pkg.EntryTable.Entries = new Entry[Pkg.Header.EntryCount];
+            for (int i = 0; i < Pkg.Header.EntryCount; ++i) {
+                Pkg.EntryTable.Entries[i].Id = (EntryId)IO.In.ReadUInt32();
+                Pkg.EntryTable.Entries[i].unk = IO.In.ReadUInt32();
+                Pkg.EntryTable.Entries[i].Flags1 = IO.In.ReadUInt32();
+                Pkg.EntryTable.Entries[i].Flags2 = IO.In.ReadUInt32();
+                Pkg.EntryTable.Entries[i].Offset = IO.In.ReadUInt32();
+                Pkg.EntryTable.Entries[i].Size = IO.In.ReadUInt32();
+                Pkg.EntryTable.Entries[i].Pad = IO.In.ReadUInt64();
+
+                Pkg.EntryTable.Entries[i].KeyIndex = ((Pkg.EntryTable.Entries[i].Flags2 & 0xF000) >> 12);
+                Pkg.EntryTable.Entries[i].IsEncrypted = ((Pkg.EntryTable.Entries[i].Flags1 & 0x80000000) != 0) ? true : false;
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -911,6 +991,7 @@ namespace OrbisPkg.CNT
         public struct PackageFile {
             public PackageHeader Header;
             public ContainerHeader Container;
+            public EntryTable EntryTable;
 
             public bool IsFinalized;
         };
@@ -939,7 +1020,7 @@ namespace OrbisPkg.CNT
             public uint unk_0x8C; /* for delta patches only? */
             public uint unk_0x90; /* for delta patches only? */
             public uint unk_0x94; /* for delta patches only? */
-            public uint IroTag;
+            public IroTag IroTag;
             public uint EkcVersion;
             public byte[] Pad1;
             public byte[] ScEntries1Hash;
@@ -963,6 +1044,46 @@ namespace OrbisPkg.CNT
             public byte[] PfsSignedDigest;
             public ulong PfsSplitSizeNth0;
             public ulong PfsSplitSizeNth1;
+        }
+
+        public struct EntryTable
+        {
+            public Entry[] Entries;
+        }
+
+        public struct Entry {
+            public EntryId Id;
+            public uint unk;
+            public uint Flags1;
+            public uint Flags2;
+            public uint Offset;
+            public uint Size;
+            public ulong Pad;
+
+            public uint KeyIndex;
+            public bool IsEncrypted;
+
+            private byte[] ToArray() {
+                var ms = new MemoryStream();
+                var writer = new EndianWriter(ms, EndianType.BigEndian);
+
+                writer.Write((uint)Id);
+                writer.Write(unk);
+                writer.Write(Flags1);
+                writer.Write(Flags2);
+                writer.Write(Offset);
+                writer.Write(Size);
+                writer.Write(Pad);
+
+                writer.Close();
+
+                return ms.ToArray();
+            }
+        }
+
+        public struct EntryKeyset {
+            public byte[] key;
+            public byte[] iv;
         }
 
         #endregion
@@ -1005,7 +1126,7 @@ namespace OrbisPkg.CNT
             Pkg.Header.unk_0x8C = IO.In.ReadUInt32();
             Pkg.Header.unk_0x90 = IO.In.ReadUInt32();
             Pkg.Header.unk_0x94 = IO.In.ReadUInt32();
-            Pkg.Header.IroTag = IO.In.ReadUInt32();
+            Pkg.Header.IroTag = (IroTag)IO.In.ReadUInt32();
             Pkg.Header.EkcVersion = IO.In.ReadUInt32();
 
             Pkg.Header.Pad1 = IO.In.ReadBytes(96);
@@ -1014,14 +1135,8 @@ namespace OrbisPkg.CNT
             Pkg.Header.DigestTableHash = IO.In.ReadBytes(PKG_HASH_SIZE);
             Pkg.Header.BodyDigest = IO.In.ReadBytes(PKG_HASH_SIZE);
 
-            SeekToContainer(IO);
-        }
-
-        private void SeekToContainer(EndianIO io) {
-            io.SeekTo(0x400);
-
-            Pkg.Container.unk_0x400 = io.In.ReadUInt32();
-            Pkg.Container.PfsImageCount = io.In.ReadUInt32();
+            Pkg.Container = SeekToContainer(IO);
+            DecryptEntries(IO);
         }
 
         #endregion
