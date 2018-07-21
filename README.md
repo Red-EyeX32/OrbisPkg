@@ -26,7 +26,7 @@ The PlayStation 4 homebrew community is making a steady comeback and being that 
 ```
 
 ## Contribute
-Want to contribute? Consider clicking on the [contributing guidelines](https://github.com/Red-EyeX3/OrbisPkg/blob/master/CONTRIBUTING.md).
+Want to contribute? Consider clicking on the [contributing guidelines](https://github.com/Red-EyeX32/OrbisPkg/blob/master/CONTRIBUTING.md).
 
 ## Credits
 #### In no particular order.
