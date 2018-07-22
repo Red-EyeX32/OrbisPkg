@@ -922,7 +922,38 @@ namespace OrbisPkg.CNT
                 case EntryId.PKG_ENTRY_ID__ICON0_PNG: return "icon0.png";
 
                 case EntryId iconpng when (iconpng >= EntryId.PKG_ENTRY_ID__ICON0_00_PNG && iconpng <= EntryId.PKG_ENTRY_ID__ICON0_30_PNG):
-                    return string.Format("icon0_{0}.png", iconpng - EntryId.PKG_ENTRY_ID__ICON0_00_PNG);
+                    return string.Format("icon0_{0:00}.png", iconpng - EntryId.PKG_ENTRY_ID__ICON0_00_PNG);
+
+                case EntryId.PKG_ENTRY_ID__PIC0_PNG: return "pic0.png";
+                case EntryId.PKG_ENTRY_ID__SND0_AT9: return "snd0.at9";
+
+                case EntryId picpng when (picpng >= EntryId.PKG_ENTRY_ID__PIC1_00_PNG && picpng <= EntryId.PKG_ENTRY_ID__PIC1_30_PNG):
+                    return string.Format("pic1_{0:00}.png", picpng - EntryId.PKG_ENTRY_ID__PIC1_00_PNG);
+
+                case EntryId.PKG_ENTRY_ID__CHANGEINFO__CHANGEINFO_XML: return "changeinfo/changeinfo.xml";
+
+                case EntryId changeinfo when (changeinfo >= EntryId.PKG_ENTRY_ID__CHANGEINFO__CHANGEINFO_00_XML && changeinfo <= EntryId.PKG_ENTRY_ID__CHANGEINFO__CHANGEINFO_30_XML):
+                    return string.Format("changeinfo/changeinfo_{0:00}.png", changeinfo - EntryId.PKG_ENTRY_ID__CHANGEINFO__CHANGEINFO_00_XML);
+
+                case EntryId.PKG_ENTRY_ID__ICON0_DDS: return "icon0.dds";
+
+                case EntryId icondds when (icondds >= EntryId.PKG_ENTRY_ID__ICON0_00_DDS && icondds <= EntryId.PKG_ENTRY_ID__ICON0_30_DDS):
+                    return string.Format("icon0_{0:00}.dds", icondds - EntryId.PKG_ENTRY_ID__ICON0_00_DDS);
+
+                case EntryId.PKG_ENTRY_ID__PIC0_DDS: return "pic0.dds";
+                case EntryId.PKG_ENTRY_ID__PIC1_DDS: return "pic1.dds";
+
+                case EntryId picdds when (picdds >= EntryId.PKG_ENTRY_ID__PIC1_00_DDS && picdds <= EntryId.PKG_ENTRY_ID__PIC1_30_DDS):
+                    return string.Format("pic1_{0:00}.dds", picdds - EntryId.PKG_ENTRY_ID__PIC1_00_DDS);
+
+                case EntryId trophytrp when (trophytrp >= EntryId.PKG_ENTRY_ID__TROPHY__TROPHY00_TRP && trophytrp <= EntryId.PKG_ENTRY_ID__TROPHY__TROPHY99_TRP):
+                    return string.Format("trophy/trophy_{0:00}.trp", trophytrp - EntryId.PKG_ENTRY_ID__TROPHY__TROPHY00_TRP);
+
+                case EntryId keymap when (keymap >= EntryId.PKG_ENTRY_ID__KEYMAP_RP__001_PNG && keymap <= EntryId.PKG_ENTRY_ID__KEYMAP_RP__010_PNG):
+                    return string.Format("keymap_rp/keymap_rp{0:000}.png", keymap - EntryId.PKG_ENTRY_ID__KEYMAP_RP__001_PNG);
+
+                case EntryId keymaprp when (keymaprp >= EntryId.PKG_ENTRY_ID__KEYMAP_RP__00__001_PNG && keymaprp <= EntryId.PKG_ENTRY_ID__KEYMAP_RP__30__010_PNG):
+                    return string.Format("keymap_rp/{0}/keymap_rp{1:000}.png", (keymaprp - EntryId.PKG_ENTRY_ID__KEYMAP_RP__00__001_PNG) / 0x10, (keymaprp - EntryId.PKG_ENTRY_ID__KEYMAP_RP__00__001_PNG) % 0x10);
 
                 default:
                     throw new Exception("CNT: Invalid 'Entry Id' value.");
@@ -961,24 +992,42 @@ namespace OrbisPkg.CNT
             }
         }
 
-        private void DecryptEntries(EndianIO io)
+        private void SeekNDecryptEntries(EndianIO io)
         {
             io.SeekTo(0x2400);
-            byte[] data = RsaDecrypt(io.In.ReadBytes(PKG_ENTRY_KEYSET_ENC_SIZE), param);
+            byte[] DecEntryKeyset = RsaDecrypt(io.In.ReadBytes(PKG_ENTRY_KEYSET_ENC_SIZE), param);
 
             io.SeekTo(Pkg.Header.EntryTableOffset);
-            Pkg.EntryTable.Entries = new Entry[Pkg.Header.EntryCount];
+            Pkg.Entries = new Entry[Pkg.Header.EntryCount];
             for (int i = 0; i < Pkg.Header.EntryCount; ++i) {
-                Pkg.EntryTable.Entries[i].Id = (EntryId)IO.In.ReadUInt32();
-                Pkg.EntryTable.Entries[i].unk = IO.In.ReadUInt32();
-                Pkg.EntryTable.Entries[i].Flags1 = IO.In.ReadUInt32();
-                Pkg.EntryTable.Entries[i].Flags2 = IO.In.ReadUInt32();
-                Pkg.EntryTable.Entries[i].Offset = IO.In.ReadUInt32();
-                Pkg.EntryTable.Entries[i].Size = IO.In.ReadUInt32();
-                Pkg.EntryTable.Entries[i].Pad = IO.In.ReadUInt64();
+                Pkg.Entries[i].Id = (EntryId)IO.In.ReadUInt32();
+                Pkg.Entries[i].unk = IO.In.ReadUInt32();
+                Pkg.Entries[i].Flags1 = IO.In.ReadUInt32();
+                Pkg.Entries[i].Flags2 = IO.In.ReadUInt32();
+                Pkg.Entries[i].Offset = IO.In.ReadUInt32();
+                Pkg.Entries[i].Size = IO.In.ReadUInt32();
+                Pkg.Entries[i].Pad = IO.In.ReadUInt64();
 
-                Pkg.EntryTable.Entries[i].KeyIndex = ((Pkg.EntryTable.Entries[i].Flags2 & 0xF000) >> 12);
-                Pkg.EntryTable.Entries[i].IsEncrypted = ((Pkg.EntryTable.Entries[i].Flags1 & 0x80000000) != 0) ? true : false;
+                Pkg.Entries[i].Name = EntryIdToString(Pkg.Entries[i].Id);
+                Pkg.Entries[i].KeyIndex = ((Pkg.Entries[i].Flags2 & 0xF000) >> 12);
+                Pkg.Entries[i].IsEncrypted = ((Pkg.Entries[i].Flags1 & 0x80000000) != 0) ? true : false;
+            }
+
+            for (int i = 0; i < Pkg.Header.EntryCount; ++i) {
+                if (Pkg.Entries[i].IsEncrypted) {
+                    byte[] EntryData = new byte[64];
+                    Array.Copy(Pkg.Entries[i].ToArray(), EntryData, 32);
+                    Array.Copy(DecEntryKeyset, 0, EntryData, 32, 32);
+                    
+                    byte[] Hash = Sha256(EntryData);
+
+                    EntryKeyset keyset = new EntryKeyset() {
+                        iv = new byte[16], key = new byte[16]
+                    };
+
+                    Array.Copy(Hash, 0, keyset.iv, 0, 16);
+                    Array.Copy(Hash, 16, keyset.key, 0, 16);
+                }
             }
         }
 
@@ -991,7 +1040,7 @@ namespace OrbisPkg.CNT
         public struct PackageFile {
             public PackageHeader Header;
             public ContainerHeader Container;
-            public EntryTable EntryTable;
+            public Entry[] Entries;
 
             public bool IsFinalized;
         };
@@ -1046,11 +1095,6 @@ namespace OrbisPkg.CNT
             public ulong PfsSplitSizeNth1;
         }
 
-        public struct EntryTable
-        {
-            public Entry[] Entries;
-        }
-
         public struct Entry {
             public EntryId Id;
             public uint unk;
@@ -1060,10 +1104,11 @@ namespace OrbisPkg.CNT
             public uint Size;
             public ulong Pad;
 
+            public string Name;
             public uint KeyIndex;
             public bool IsEncrypted;
 
-            private byte[] ToArray() {
+            public byte[] ToArray() {
                 var ms = new MemoryStream();
                 var writer = new EndianWriter(ms, EndianType.BigEndian);
 
@@ -1082,8 +1127,8 @@ namespace OrbisPkg.CNT
         }
 
         public struct EntryKeyset {
-            public byte[] key;
             public byte[] iv;
+            public byte[] key;
         }
 
         #endregion
@@ -1136,7 +1181,7 @@ namespace OrbisPkg.CNT
             Pkg.Header.BodyDigest = IO.In.ReadBytes(PKG_HASH_SIZE);
 
             Pkg.Container = SeekToContainer(IO);
-            DecryptEntries(IO);
+            SeekNDecryptEntries(IO);
         }
 
         #endregion

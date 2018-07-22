@@ -64,7 +64,7 @@ namespace OrbisPkg
 
                 folderTreeView.Nodes.Add(name, name);
             } else {
-
+                string[] folders = node.Split('\\');
             }
         }
 
