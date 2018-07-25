@@ -48,6 +48,8 @@
     <Compile Include="Classes\Archive.cs" />
     <Compile Include="Classes\CNT\Package.cs" />
     <Compile Include="Classes\CNT\PlaystationFileSystem.cs" />
+    <Compile Include="Classes\Security\Cryptography\Aes\Xts.cs" />
+    <Compile Include="Classes\Security\Cryptography\Aes\XtsCryptoTransform.cs" />
     <Compile Include="Forms\frmPasscode.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -137,5 +139,6 @@
   <ItemGroup>
     <None Include="Resources\Property_16x.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

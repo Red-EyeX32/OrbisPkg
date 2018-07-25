@@ -22,54 +22,59 @@ namespace OrbisPkg.CNT
 
         public PackageFile Pkg = new PackageFile();
 
-        private const uint PKG_FLAG_FINALIZED = ((uint)1 << 31);
+        private const uint PKG_FLAG_FINALIZED = (1u << 31);
 
-        private const uint PKG_FLAGS_VER_1 = 0x01000000;
-        private const uint PKG_FLAGS_VER_2 = 0x02000000;
-        private const uint PKG_FLAGS_INTERNAL = 0x40000000;
+        private const uint PKG_FLAGS_VER_1     = 0x01000000;
+        private const uint PKG_FLAGS_VER_2     = 0x02000000;
+        private const uint PKG_FLAGS_INTERNAL  = 0x40000000;
         private const uint PKG_FLAGS_FINALIZED = 0x80000000;
 
-        private const uint PKG_CONTENT_ID_SIZE = 0x24;
+        private const uint PKG_CONTENT_ID_SIZE       = 0x24;
         private const uint PKG_CONTENT_ID_BLOCK_SIZE = 0x30;
-        private const uint PKG_HASH_SIZE = 0x20;
-        private const uint PKG_PASSCODE_SIZE = 0x20;
+        private const uint PKG_HASH_SIZE             = 0x20;
+        private const uint PKG_PASSCODE_SIZE         = 0x20;
+        private const uint PKG_KEYSTONE_BLOCK_SIZE   = 0x20;
 
-        private const uint PKG_CONTENT_FLAGS_FIRST_PATCH = 0x00100000;
-        private const uint PKG_CONTENT_FLAGS_PATCHGO = 0x00200000;
-        private const uint PKG_CONTENT_FLAGS_REMASTER = 0x00400000;
-        private const uint PKG_CONTENT_FLAGS_PS_CLOUD = 0x00800000;
-        private const uint PKG_CONTENT_FLAGS_GD_AC = 0x02000000;
-        private const uint PKG_CONTENT_FLAGS_NON_GAME = 0x04000000;
-        private const uint PKG_CONTENT_FLAGS_0x8000000 = 0x08000000; // has data?
+        private const uint PKG_CONTENT_FLAGS_FIRST_PATCH      = 0x00100000;
+        private const uint PKG_CONTENT_FLAGS_PATCHGO          = 0x00200000;
+        private const uint PKG_CONTENT_FLAGS_REMASTER         = 0x00400000;
+        private const uint PKG_CONTENT_FLAGS_PS_CLOUD         = 0x00800000;
+        private const uint PKG_CONTENT_FLAGS_GD_AC            = 0x02000000;
+        private const uint PKG_CONTENT_FLAGS_NON_GAME         = 0x04000000;
+        private const uint PKG_CONTENT_FLAGS_0x8000000        = 0x08000000; // has data?
         private const uint PKG_CONTENT_FLAGS_SUBSEQUENT_PATCH = 0x40000000;
-        private const uint PKG_CONTENT_FLAGS_DELTA_PATCH = 0x41000000;
+        private const uint PKG_CONTENT_FLAGS_DELTA_PATCH      = 0x41000000;
         private const uint PKG_CONTENT_FLAGS_CUMULATIVE_PATCH = 0x60000000;
 
         private const ulong PKG_PFS_FLAG_NESTED_IMAGE = 0x8000000000000000;
 
-        private const uint PKG_ENTRY_KEYSET_SIZE = 0x20;
+        private const uint PKG_ENTRY_KEYSET_SIZE     = 0x20;
         private const uint PKG_ENTRY_KEYSET_ENC_SIZE = 0x100;
 
-        private enum AppType {
+        private enum AppType
+        {
             APP_TYPE_PAID_STANDALONE_FULL = 1,
             APP_TYPE_UPGRADABLE = 2,
             APP_TYPE_DEMO = 3,
             APP_TYPE_FREEMIUM = 4,
         }
 
-        public enum DrmType {
+        public enum DrmType
+        {
             DRM_TYPE_NONE = 0x0,
             DRM_TYPE_PS4 = 0xF,
         }
 
-        public enum ContentType {
+        public enum ContentType
+        {
             CONTENT_TYPE_GD = 0x1A, /* pkg_ps4_app, pkg_ps4_patch, pkg_ps4_remaster */
             CONTENT_TYPE_AC = 0x1B, /* pkg_ps4_ac_data, pkg_ps4_sf_theme, pkg_ps4_theme */
             CONTENT_TYPE_AL = 0x1C, /* pkg_ps4_ac_nodata */
             CONTENT_TYPE_DP = 0x1E, /* pkg_ps4_delta_patch */
         }
 
-        public enum IroTag {
+        public enum IroTag
+        {
             IRO_TAG_SF_THEME = 0x1, /* SHAREfactory theme */
             IRO_TAG_SS_THEME = 0x2, /* System Software theme */
         }
@@ -697,9 +702,11 @@ namespace OrbisPkg.CNT
 
         #region RSA Signature Keys
 
-        private static RSAParameters param = new RSAParameters() {
+        private static RSAParameters param = new RSAParameters()
+        {
             // TOP_SIGNATURE_PRIVATE_EXPONENT
-            D = new byte[256] {
+            D = new byte[256] 
+            {
                 0x32, 0xD9, 0x03, 0x90, 0x8F, 0xBD, 0xB0, 0x8F, 0x57, 0x2B, 0x28, 0x5E, 0x0B, 0x8D, 0xB3, 0xEA,
                 0x5C, 0xD1, 0x7E, 0xA8, 0x90, 0x88, 0x8C, 0xDD, 0x6A, 0x80, 0xBB, 0xB1, 0xDF, 0xC1, 0xF7, 0x0D,
                 0xAA, 0x32, 0xF0, 0xB7, 0x7C, 0xCB, 0x88, 0x80, 0x0E, 0x8B, 0x64, 0xB0, 0xBE, 0x4C, 0xD6, 0x0E,
@@ -719,7 +726,8 @@ namespace OrbisPkg.CNT
             },
 
             // TOP_SIGNATURE_DMP1
-            DP = new byte[128] {
+            DP = new byte[128] 
+            {
                 0x52, 0xCC, 0x2D, 0xA0, 0x9C, 0x9E, 0x75, 0xE7, 0x28, 0xEE, 0x3D, 0xDE, 0xE3, 0x45, 0xD1, 0x4F,
                 0x94, 0x1C, 0xCC, 0xC8, 0x87, 0x29, 0x45, 0x3B, 0x8D, 0x6E, 0xAB, 0x6E, 0x2A, 0xA7, 0xC7, 0x15,
                 0x43, 0xA3, 0x04, 0x8F, 0x90, 0x5F, 0xEB, 0xF3, 0x38, 0x4A, 0x77, 0xFA, 0x36, 0xB7, 0x15, 0x76,
@@ -731,7 +739,8 @@ namespace OrbisPkg.CNT
             },
 
             // TOP_SIGNATURE_DMQ1
-            DQ = new byte[128] {
+            DQ = new byte[128] 
+            {
                 0x7C, 0x9D, 0xAD, 0x39, 0xE0, 0xD5, 0x60, 0x14, 0x94, 0x48, 0x19, 0x7F, 0x88, 0x95, 0xD5, 0x8B,
                 0x80, 0xAD, 0x85, 0x8A, 0x4B, 0x77, 0x37, 0x85, 0xD0, 0x77, 0xBB, 0xBF, 0x89, 0x71, 0x4A, 0x72,
                 0xCB, 0x72, 0x68, 0x38, 0xEC, 0x02, 0xC6, 0x7D, 0xC6, 0x44, 0x06, 0x33, 0x51, 0x1C, 0xC0, 0xFF,
@@ -743,12 +752,14 @@ namespace OrbisPkg.CNT
             },
 
             // TOP_SIGNATURE_PUBLIC_EXPONENT
-            Exponent = new byte[4] {
+            Exponent = new byte[4] 
+            {
                 0x00, 0x01, 0x00, 0x01
             },
 
             // TOP_SIGNATURE_INVERSEQ - 0000000000640D10 - 0000000000640D8F
-            InverseQ = new byte[128] {
+            InverseQ = new byte[128] 
+            {
                 0x45, 0x97, 0x55, 0xD4, 0x22, 0x08, 0x5E, 0xF3, 0x5C, 0xB4, 0x05, 0x7A, 0xFD, 0xAA, 0x42, 0x42,
                 0xAD, 0x9A, 0x8C, 0xA0, 0x6C, 0xBB, 0x1D, 0x68, 0x54, 0x54, 0x6E, 0x3E, 0x32, 0xE3, 0x53, 0x73,
                 0x76, 0xF1, 0x3E, 0x01, 0xEA, 0xD3, 0xCF, 0xEB, 0xEB, 0x23, 0x3E, 0xC0, 0xBE, 0xCE, 0xEC, 0x2C,
@@ -760,7 +771,8 @@ namespace OrbisPkg.CNT
             },
 
             // TOP_SIGNATURE_MODULUS
-            Modulus = new byte[256] {
+            Modulus = new byte[256] 
+            {
                 0xD2, 0x12, 0xFC, 0x33, 0x5F, 0x6D, 0xDB, 0x83, 0x16, 0x09, 0x62, 0x8B, 0x03, 0x56, 0x27, 0x37,
                 0x82, 0xD4, 0x77, 0x85, 0x35, 0x29, 0x39, 0x2D, 0x52, 0x6B, 0x8C, 0x4C, 0x8C, 0xFB, 0x06, 0xC1,
                 0x84, 0x5B, 0xE7, 0xD4, 0xF7, 0xBC, 0xD2, 0x4E, 0x62, 0x45, 0xCD, 0x2A, 0xBB, 0xD7, 0x77, 0x76,
@@ -780,7 +792,8 @@ namespace OrbisPkg.CNT
             },
 
             // TOP_SIGNATURE_P
-            P = new byte[128] {
+            P = new byte[128] 
+            {
                 0xF9, 0x67, 0xAD, 0x99, 0x12, 0x31, 0x0C, 0x56, 0xA2, 0x2E, 0x16, 0x1C, 0x46, 0xB3, 0x4D, 0x5B,
                 0x43, 0xBE, 0x42, 0xA2, 0xF6, 0x86, 0x96, 0x80, 0x42, 0xC3, 0xC7, 0x3F, 0xC3, 0x42, 0xF5, 0x87,
                 0x49, 0x33, 0x9F, 0x07, 0x5D, 0x6E, 0x2C, 0x04, 0xFD, 0xE3, 0xE1, 0xB2, 0xAE, 0x0A, 0x0C, 0xF0,
@@ -792,7 +805,8 @@ namespace OrbisPkg.CNT
             },
 
             // TOP_SIGNATURE_Q
-            Q = new byte[128] {
+            Q = new byte[128] 
+            {
                 0xD7, 0xA1, 0x0F, 0x9A, 0x8B, 0xF2, 0xC9, 0x11, 0x95, 0x32, 0x9A, 0x8C, 0xF0, 0xD9, 0x40, 0x47,
                 0xF5, 0x68, 0xA0, 0x0D, 0xBD, 0xC1, 0xFC, 0x43, 0x2F, 0x65, 0xF9, 0xC3, 0x61, 0x0F, 0x25, 0x77,
                 0x54, 0xAD, 0xD7, 0x58, 0xAC, 0x84, 0x40, 0x60, 0x8D, 0x3F, 0xF3, 0x65, 0x89, 0x75, 0xB5, 0xC6,
@@ -808,9 +822,16 @@ namespace OrbisPkg.CNT
 
         #region Keystone Keys
 
-        private static byte[] keystone_passcode_secret = new byte[32] {
+        private static byte[] keystone_passcode_secret = new byte[32] 
+        {
             0xC7, 0x44, 0x05, 0xF6, 0x74, 0x24, 0xBA, 0x34, 0x2B, 0xC1, 0x27, 0x62, 0x51, 0xBB, 0xC2, 0xF5,
             0x55, 0xF1, 0x60, 0x25, 0xB6, 0xA1, 0xB6, 0x71, 0x47, 0x80, 0xDB, 0xAE, 0xC8, 0x52, 0xFA, 0x2F
+        };
+
+        private static byte[] keystone_ks_secret = new byte[32]
+        {
+            0x78, 0x3D, 0x6F, 0x3A, 0xE9, 0x1C, 0x0E, 0x07, 0x12, 0xFC, 0xAA, 0xB7, 0x95, 0x0B, 0xDE, 0x06,
+            0x85, 0x5C, 0xF7, 0xA2, 0x2D, 0xCD, 0xBD, 0xE1, 0x27, 0xE9, 0xBF, 0xCB, 0xAD, 0x0F, 0xF0, 0xFE
         };
 
         #endregion
@@ -850,20 +871,31 @@ namespace OrbisPkg.CNT
 
         #region Private Methods
 
-        private static uint ReverseBytes(uint val) {
+        private static uint ReverseBytes(uint val)
+        {
             return (val & 0x000000FFU) << 24 | (val & 0x0000FF00U) << 8 |
                    (val & 0x00FF0000U) >> 8 | (val & 0xFF000000U) >> 24;
         }
 
-        private static byte[] Sha256(byte[] data) {
+        private static byte[] Sha256(byte[] data)
+        {
             return SHA256.Create().ComputeHash(data);
         }
 
-        private bool IsPasscodeValid(string data) {
+        private static byte[] HmacSha256(byte[] key, byte[] data)
+        {
+            var sha = new HMACSHA256(key);
+            sha.ComputeHash(data);
+            return sha.Hash;
+        }
+
+        private bool IsPasscodeValid(string data)
+        {
             return Regex.IsMatch(data, @"^[A-Za-z0-9-_]+$");
         }
 
-        private byte[] ComputeKeys(byte[] ContentId, byte[] Passcode, uint Index) {
+        private byte[] ComputeKeys(byte[] ContentId, byte[] Passcode, uint Index)
+        {
             if (ContentId.Length != PKG_CONTENT_ID_SIZE)
                 return null;
 
@@ -881,8 +913,34 @@ namespace OrbisPkg.CNT
             return Sha256(data);
         }
 
-        private byte[] ComputeImageKey(byte[] ContentId, byte[] Passcode) {
+        private byte[] ComputeImageKey(byte[] ContentId, byte[] Passcode)
+        {
             return ComputeKeys(ContentId, Passcode, 1);
+        }
+
+        private byte[] ComputeFingerprint(byte[] Passcode)
+        {
+            return HmacSha256(keystone_passcode_secret, Passcode);
+        }
+
+        private byte[] ComputeKeystone(byte[] Fingerprint)
+        {
+            var ms = new MemoryStream();
+            var writer = new EndianWriter(ms, EndianType.LittleEndian);
+
+            writer.Write("keystone");
+            writer.Write((ushort)2);
+            writer.Write((ushort)1);
+            writer.Write(new byte[20]);
+            writer.Write(Fingerprint);
+
+            byte[] Digest = HmacSha256(keystone_ks_secret, ms.ToArray());
+            writer.Write(Digest);
+
+            writer.Close();
+            writer.Dispose();
+
+            return ms.ToArray();
         }
 
         private string EntryIdToString(EntryId id)
@@ -992,10 +1050,14 @@ namespace OrbisPkg.CNT
             }
         }
 
-        private void SeekNDecryptEntries(EndianIO io)
+        private Entry[] SeekToEntries(EndianIO io)
         {
             io.SeekTo(0x2400);
             byte[] DecEntryKeyset = RsaDecrypt(io.In.ReadBytes(PKG_ENTRY_KEYSET_ENC_SIZE), param);
+
+            byte[] ImageKey = ComputeImageKey(Encoding.ASCII.GetBytes(ContentId), Encoding.ASCII.GetBytes(Passcode));
+            byte[] Fingerprint = ComputeFingerprint(Encoding.ASCII.GetBytes(Passcode));
+            byte[] Keystone = ComputeKeystone(Fingerprint);
 
             io.SeekTo(Pkg.Header.EntryTableOffset);
             Pkg.Entries = new Entry[Pkg.Header.EntryCount];
@@ -1013,22 +1075,7 @@ namespace OrbisPkg.CNT
                 Pkg.Entries[i].IsEncrypted = ((Pkg.Entries[i].Flags1 & 0x80000000) != 0) ? true : false;
             }
 
-            for (int i = 0; i < Pkg.Header.EntryCount; ++i) {
-                if (Pkg.Entries[i].IsEncrypted) {
-                    byte[] EntryData = new byte[64];
-                    Array.Copy(Pkg.Entries[i].ToArray(), EntryData, 32);
-                    Array.Copy(DecEntryKeyset, 0, EntryData, 32, 32);
-                    
-                    byte[] Hash = Sha256(EntryData);
-
-                    EntryKeyset keyset = new EntryKeyset() {
-                        iv = new byte[16], key = new byte[16]
-                    };
-
-                    Array.Copy(Hash, 0, keyset.iv, 0, 16);
-                    Array.Copy(Hash, 16, keyset.key, 0, 16);
-                }
-            }
+            return Pkg.Entries;
         }
 
         #endregion
@@ -1037,7 +1084,8 @@ namespace OrbisPkg.CNT
 
         #region PlayStation 4 Package Structure
 
-        public struct PackageFile {
+        public struct PackageFile
+        {
             public PackageHeader Header;
             public ContainerHeader Container;
             public Entry[] Entries;
@@ -1045,7 +1093,8 @@ namespace OrbisPkg.CNT
             public bool IsFinalized;
         };
 
-        public struct PackageHeader {
+        public struct PackageHeader
+        {
             public uint Magic;
             public uint Flags;
             public uint unk_0x08;
@@ -1078,7 +1127,8 @@ namespace OrbisPkg.CNT
             public byte[] BodyDigest;
         };
 
-        public struct ContainerHeader {
+        public struct ContainerHeader
+        {
             public uint unk_0x400;
             public uint PfsImageCount;
             public ulong PfsFlags; // Still got to figure out flags.
@@ -1095,7 +1145,8 @@ namespace OrbisPkg.CNT
             public ulong PfsSplitSizeNth1;
         }
 
-        public struct Entry {
+        public struct Entry
+        {
             public EntryId Id;
             public uint unk;
             public uint Flags1;
@@ -1126,7 +1177,8 @@ namespace OrbisPkg.CNT
             }
         }
 
-        public struct EntryKeyset {
+        public struct EntryKeyset
+        {
             public byte[] iv;
             public byte[] key;
         }
@@ -1181,7 +1233,7 @@ namespace OrbisPkg.CNT
             Pkg.Header.BodyDigest = IO.In.ReadBytes(PKG_HASH_SIZE);
 
             Pkg.Container = SeekToContainer(IO);
-            SeekNDecryptEntries(IO);
+            Pkg.Entries = SeekToEntries(IO);
         }
 
         #endregion
@@ -1191,7 +1243,8 @@ namespace OrbisPkg.CNT
         /// <summary>
         /// Gets or sets the Passcode.
         /// </summary>
-        public string Passcode {
+        public string Passcode
+        {
             get { return _Passcode; }
             set {
                 if (value.Length != PKG_PASSCODE_SIZE || !IsPasscodeValid(value))
@@ -1204,7 +1257,8 @@ namespace OrbisPkg.CNT
         /// <summary>
         /// Gets or sets the ContentId
         /// </summary>
-        public string ContentId {
+        public string ContentId
+        {
             get { return Pkg.Header.ContentId; }
             set {
                 if (value.Length != PKG_CONTENT_ID_SIZE)
