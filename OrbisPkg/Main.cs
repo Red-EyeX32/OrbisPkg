@@ -44,9 +44,9 @@ namespace OrbisPkg
             Content.Read();
             
             string[] SplitContentId = Content.Pkg.Header.ContentId.Split('-');
-            string Root = SplitContentId[1].Substring(0, SplitContentId[1].Length - 3);
+            string TitleId = SplitContentId[1].Substring(0, SplitContentId[1].Length - 3);
 
-            RetrieveFolders(Root);
+            RetrieveFolders(TitleId);
         }
 
         public void RetrieveFolders(string root)

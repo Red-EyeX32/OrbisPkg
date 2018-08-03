@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+
+using OrbisPkg.Security;
+using OrbisPkg.Classes;
 
 namespace OrbisPkg.CNT
 {
@@ -48,6 +47,7 @@ namespace OrbisPkg.CNT
 
         private const ulong PKG_PFS_FLAG_NESTED_IMAGE = 0x8000000000000000;
 
+        private const uint PKG_MAX_ENTRY_KEYS        = 0x07;
         private const uint PKG_ENTRY_KEYSET_SIZE     = 0x20;
         private const uint PKG_ENTRY_KEYSET_ENC_SIZE = 0x100;
 
@@ -943,6 +943,68 @@ namespace OrbisPkg.CNT
             return ms.ToArray();
         }
 
+        private byte[] GenerateKeyBlock(byte[] Modulus, byte[] Exponent, byte[] Key)
+        {
+            byte[] Seed = new byte[Modulus.Length + Key.Length];
+            Buffer.BlockCopy(Modulus, 0, Seed, 0, Modulus.Length);
+            Buffer.BlockCopy(Key, 0, Seed, Modulus.Length, Key.Length);
+
+            byte[] HashedSeed = Sha256(Sha256(Seed));
+
+            uint[] SeedArray = new uint[HashedSeed.Length / sizeof(uint)];
+            for (int i = 0; i < (HashedSeed.Length / sizeof(uint)); i++)
+                SeedArray[i] = ReverseBytes(BitConverter.ToUInt32(HashedSeed, i * sizeof(uint)));
+
+            var entropy = new Entropy(SeedArray);
+
+            var ms = new MemoryStream();
+            var writer = new EndianWriter(ms, EndianType.LittleEndian);
+
+            writer.Write((byte)0);
+            writer.Write((byte)2);
+            writer.Write(entropy.GenerateSecure(224));
+            writer.Write((byte)0);
+            writer.Write(Key);
+
+            writer.Close();
+            writer.Dispose();
+
+            return RsaEncrypt(ms.ToArray(), param);
+        }
+
+        private static bool ArrayEquals(byte[] a, byte[] b)
+        {
+            if (a.Length != b.Length)
+                return false;
+
+            for (int i = 0; i < a.Length; i++)
+                if (a[i] != b[i])
+                    return false;
+
+            return true;
+        }
+
+        private byte[] CalculateTopSignature()
+        {
+            IO.In.SeekTo(0);
+
+            byte[] TopBlock = IO.In.ReadBytes(0xFE0);
+            byte[] TopDigest = IO.In.ReadBytes(PKG_HASH_SIZE);
+            byte[] TopSignature = IO.In.ReadBytes(0x100);
+
+            byte[] ComputedTopDigest = Sha256(TopBlock);
+
+            if (!ArrayEquals(TopDigest, ComputedTopDigest))
+                throw new Exception("CNT: Invalid top digest.");
+
+            byte[] TopBlockBytes = new byte[TopBlock.Length + TopDigest.Length];
+            Buffer.BlockCopy(TopBlock, 0, TopBlockBytes, 0, TopBlock.Length);
+            Buffer.BlockCopy(TopDigest, 0, TopBlockBytes, TopBlock.Length, TopDigest.Length);
+
+            byte[] TopSignatureDigest = Sha256(TopBlockBytes);
+            return GenerateKeyBlock(param.Modulus, param.Exponent, TopSignatureDigest);
+        }
+
         private string EntryIdToString(EntryId id)
         {
             switch (id) {
@@ -1050,6 +1112,17 @@ namespace OrbisPkg.CNT
             }
         }
 
+        private byte[] RsaEncrypt(byte[] data, RSAParameters parameters)
+        {
+            using (var rsa = new RSACryptoServiceProvider(2048))
+            {
+                // Import the Rsa key information.
+                // This needs to include private key information.
+                rsa.ImportParameters(parameters);
+                return rsa.Encrypt(data, false);
+            }
+        }
+
         private Entry[] SeekToEntries(EndianIO io)
         {
             io.SeekTo(0x2400);
@@ -1058,6 +1131,8 @@ namespace OrbisPkg.CNT
             byte[] ImageKey = ComputeImageKey(Encoding.ASCII.GetBytes(ContentId), Encoding.ASCII.GetBytes(Passcode));
             byte[] Fingerprint = ComputeFingerprint(Encoding.ASCII.GetBytes(Passcode));
             byte[] Keystone = ComputeKeystone(Fingerprint);
+
+            //byte[] GeneratedTopSignature = GenerateKeyBlock(param.Modulus, param.Exponent, )
 
             io.SeekTo(Pkg.Header.EntryTableOffset);
             Pkg.Entries = new Entry[Pkg.Header.EntryCount];
@@ -1234,6 +1309,13 @@ namespace OrbisPkg.CNT
 
             Pkg.Container = SeekToContainer(IO);
             Pkg.Entries = SeekToEntries(IO);
+
+            CalculateTopSignature();
+
+            // Read PFS content.
+            IO.In.SeekTo(Pkg.Container.PfsImageOffset);
+            var PFS = new PlaystationFileSystem();
+            PFS.Open(IO.In.ReadBytes(Pkg.Container.PfsSignedSize));
         }
 
         #endregion

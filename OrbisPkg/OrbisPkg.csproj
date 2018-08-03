@@ -48,8 +48,10 @@
     <Compile Include="Classes\Archive.cs" />
     <Compile Include="Classes\CNT\Package.cs" />
     <Compile Include="Classes\CNT\PlaystationFileSystem.cs" />
-    <Compile Include="Classes\Security\Cryptography\Aes\Xts.cs" />
-    <Compile Include="Classes\Security\Cryptography\Aes\XtsCryptoTransform.cs" />
+    <Compile Include="Classes\Entropy.cs" />
+    <Compile Include="Security\Cryptography\Aes\Xts.cs" />
+    <Compile Include="Security\Cryptography\Aes\XtsCryptoTransform.cs" />
+    <Compile Include="Classes\MT19937.cs" />
     <Compile Include="Forms\frmPasscode.cs">
       <SubType>Form</SubType>
     </Compile>

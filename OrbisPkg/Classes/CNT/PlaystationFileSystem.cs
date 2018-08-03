@@ -14,20 +14,27 @@ namespace OrbisPkg.CNT
     public sealed class PlaystationFileSystem
     {
         private EndianIO IO;
+        public PfsFile Pfs;
 
         private EndianReader reader {
             get { return IO.In; }
         }
 
-        private struct pfs_header_t {
-            public ulong version;
-            public ulong magic;
-            public uint[] id;
-            public byte fmode;
-            public byte clean;
-            public byte ronly;
-            public byte rsv;
-            public ushort mode;
+        public struct PfsFile
+        {
+            public PfsHeader Header;
+        }
+
+        public struct PfsHeader
+        {
+            public ulong Version;
+            public ulong Magic;
+            public uint[] Id;
+            public byte Fmode;
+            public byte Clean;
+            public byte Ronly;
+            public byte Rsv;
+            public ushort Mode;
             public ushort unk;
             public uint blocksz;
             public uint nbackup;
@@ -46,7 +53,7 @@ namespace OrbisPkg.CNT
         public void Open(byte[] data)
         {
             if (data != null)
-                IO = new EndianIO(data, EndianType.BigEndian, true);
+                IO = new EndianIO(data, EndianType.LittleEndian, true);
             else
                 throw new Exception("[0x80000000]: Invalid PFS data detected while parsing.");
 
@@ -56,6 +63,8 @@ namespace OrbisPkg.CNT
         private void BeginReading()
         {
             // TODO: Parse PFS.
+            Pfs.Header.Version = reader.ReadUInt64();
+            Pfs.Header.Magic = reader.ReadUInt64();
         }
     }
 }

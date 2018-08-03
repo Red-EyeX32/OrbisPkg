@@ -459,6 +459,7 @@ namespace System.IO
             this.BaseStream.Seek((long)(Length - num), SeekOrigin.Current);
             return str;
         }
+
         public string ReadNullTerminatedString()
         {
             char ch;
@@ -471,6 +472,7 @@ namespace System.IO
             }
             return str;
         }
+
         public string ReadStringNullTerminated()
         {
             string str = String.Empty;
@@ -482,6 +484,7 @@ namespace System.IO
                 str = str + ((char)num);
             }
         }
+
         public string ReadUnicodeNullTermString()
         {
             string str = String.Empty;
@@ -499,6 +502,7 @@ namespace System.IO
             base.BaseStream.Position = Address;
             return ReadUInt16();
         }
+
         public uint SeekNReadUInt32(long Address)
         {
             base.BaseStream.Position = Address;
@@ -772,28 +776,34 @@ namespace System.IO
             if (String.Length < Length)
                 this.Write(new byte[Length - String.Length]);
         }
+
         public virtual void Write(byte[] Buffer, object offset, object BufferLength)
         {
             base.Write(Buffer, Convert.ToInt32(offset), Convert.ToInt32(BufferLength));
         }
+
         public virtual void Write(byte[] Buffer, object BufferLength)
         {
             base.Write(Buffer, 0, Convert.ToInt32(BufferLength));
         }
+
         public virtual void SeekTo(object offset, SeekOrigin SeekOrigin)
         {
             Seek(Convert.ToInt32(offset), SeekOrigin);
         }
+
         public void SeekNWrite(long position, int Value)
         {
             base.BaseStream.Position = position;
             this.Write(Value);
         }
+
         public void SeekNWrite(long position, short Value)
         {
             base.BaseStream.Position = position;
             this.Write(Value);
         }
+
         public void WriteByte(object value)
         {
             long val = Convert.ToInt64(value);
