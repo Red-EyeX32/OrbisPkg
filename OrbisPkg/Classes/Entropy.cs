@@ -29,12 +29,13 @@ namespace OrbisPkg.Classes
             Capacity = capacity;
         }
 
-        public static byte[] StringToByteArray(string hex)
+        public static byte[] StringToByteArray(String hex)
         {
-            return Enumerable.Range(0, hex.Length)
-                             .Where(x => x % 2 == 0)
-                             .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
-                             .ToArray();
+            int NumberChars = hex.Length;
+            byte[] bytes = new byte[NumberChars / 2];
+            for (int i = 0; i < NumberChars; i += 2)
+                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+            return bytes;
         }
 
         public void FillBuffer()
