@@ -56,19 +56,21 @@ namespace OrbisPkg.Classes
     /// </summary>
     public class MT19937
     {
-        #region Constants -------------------------------------------------------
+        #region Constants
 
         // Period parameters.
         private const int N = 624;
         private const int M = 397;
+
         private const uint MATRIX_A = 0x9908b0dfU;   // constant vector a
         private const uint UPPER_MASK = 0x80000000U; // most significant w-r bits
         private const uint LOWER_MASK = 0x7fffffffU; // least significant r bits
         private const int MAX_RAND_INT = 0x7fffffff;
+        
         // AG01[x] = x * MATRIX_A  for x=0,1
-        private readonly static uint[] AG01 = { 0x0U, MATRIX_A };
+        private readonly static uint[] AG01 = { 0x0u, MATRIX_A };
 
-        #endregion Constants
+        #endregion
 
         #region Instance Variables ----------------------------------------------
 
@@ -348,7 +350,7 @@ namespace OrbisPkg.Classes
         }
 
         // generates a random number on [0,0xffffffff]-interval
-        uint genrand_int32()
+        public uint genrand_int32()
         {
             uint y;
             if (mti >= N)

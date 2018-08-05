@@ -14,95 +14,99 @@ namespace OrbisPkg.Classes
     {
         private MT19937 generator;
 
-        private const uint DEFAULT_CAPACITY = 48;
-        private const uint WORD_SIZE = 4;
+        private const int DEFAULT_CAPACITY = 48;
+        private const int WORD_SIZE = 4;
 
-        private uint Capacity;
-        private byte[] Buffer;
+        private int Capacity;
+        private byte[] Data;
 
-        private uint Size;
-        private uint Count = 0;
+        private int Length;
+        private int Count = 0;
 
-        public Entropy(uint[] Seed, uint capacity = DEFAULT_CAPACITY)
+        public Entropy(uint[] Seed, int capacity = DEFAULT_CAPACITY)
         {
             generator = new MT19937(Seed);
             Capacity = capacity;
         }
 
-        public static byte[] StringToByteArray(String hex)
+        private void AddData()
         {
-            int NumberChars = hex.Length;
-            byte[] bytes = new byte[NumberChars / 2];
-            for (int i = 0; i < NumberChars; i += 2)
-                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
-            return bytes;
-        }
-
-        public void FillBuffer()
-        {
-            string Random = "";
-
             if (Count != 0)
                 return;
 
+            uint[] random = new uint[Capacity / WORD_SIZE];
             for (int i = 0; i < (Capacity / WORD_SIZE); i++) {
-                Random += string.Format("{0}", generator.Next().ToString("X8"));
+                uint rand = generator.genrand_int32();
+                random[i] = ((rand & 0x000000ffu) << 24
+                           | (rand & 0x0000ff00u) << 8 
+                           | (rand & 0x00ff0000u) >> 8
+                           | (rand & 0xff000000u) >> 24);
             }
 
-            Buffer = StringToByteArray(Random);
+            Data = new byte[random.Length * sizeof(uint)];
+            Buffer.BlockCopy(random, 0, Data, 0, Data.Length);
 
-            Size = (uint)Buffer.Length;
+            Length = Data.Length;
             Count = Capacity;
         }
 
-        public string Slice(string source, int start, int end)
+        private byte[] SubBytes(byte[] src, int srcBegin, int srcEnd)
         {
-            if (end < 0) // Keep this for negative end support
-                end = source.Length + end;
+            if (srcEnd < 0)
+                srcEnd = src.Length + srcEnd;
 
-            int len = end - start;               // Calculate length
-            return source.Substring(start, len); // Return Substring of length
+            byte[] dst = new byte[srcEnd - srcBegin];
+            Buffer.BlockCopy(src, srcBegin, dst, 0, srcEnd - srcBegin);
+            return dst;
         }
 
-        public string Generate(int size)
+        private byte[] Generate(int Size)
         {
-            string output = "";
+            byte[] output = new byte[] { };
 
-            while (size > 0) {
-                FillBuffer();
+            while (Size > 0) {
+                AddData();
 
-                if (size > Count) {
-                    output += Slice(Encoding.ASCII.GetString(Buffer), (int)(Size - Count), (int)Size);
+                if (Size > Count) {
+                    byte[] Slice = SubBytes(Data, (Length - Count), Length);
+                    if (output.Length == 0)
+                        output = Slice;
+                    else
+                        Buffer.BlockCopy(Slice, 0, output, output.Length, Slice.Length);
 
-                    size -= (int)Count;
+                    Size -= Count;
                     Count = 0;
                 } else {
-                    output += Slice(Encoding.ASCII.GetString(Buffer), (int)(Size - Count), (int)(Size - Count) + size);
+                    byte[] Slice = SubBytes(Data, (Length - Count), (Length - Count) + Size);
+                    if (output.Length == 0)
+                        output = Slice;
+                    else
+                        Buffer.BlockCopy(Slice, 0, output, output.Length, Slice.Length);
 
-                    Count -= (uint)size;
-                    size = 0;
+                    Count -= Size;
+                    Size = 0;
                 }
             }
 
             return output;
         }
 
-        public string GenerateSecure(int size)
+        public byte[] CalculateEntropy(int size)
         {
-            string output = "";
+            List<byte> entropy = new List<byte>();
 
             while (size > 0) {
-                byte[] Data = SHA256.Create().ComputeHash(Encoding.ASCII.GetBytes(Generate((int)DEFAULT_CAPACITY)));
+                byte[] hash = SHA256.Create().ComputeHash(Generate(DEFAULT_CAPACITY));
 
-                foreach (char c in Data) {
+                foreach (char c in hash) {
                     if (c != '\0') {
-                        output += c;
+                        entropy.Add(Convert.ToByte(c));
                         size -= 1;
                     }
                 }
             }
-
-            return output;
+            
+            return entropy.ToArray();
         }
     }
 }
