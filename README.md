@@ -14,7 +14,7 @@ The PlayStation 4 homebrew community is making a steady comeback and being that 
 ## Tech/Framework
 ```
 - Visual Studio 2017
-- .NET Framework 4.5.2
+- .NET Framework 4.6
 ```
 
 ## Installation
